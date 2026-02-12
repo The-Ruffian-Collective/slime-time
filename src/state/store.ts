@@ -8,6 +8,11 @@ export interface TouchPoint {
   radius: number
 }
 
+export interface ActiveAddIn {
+  addInId: string
+  density: number
+}
+
 interface SlimeState {
   // Touch input (written by usePointerTracker, read by TouchImprint in useFrame)
   isPointerDown: boolean
@@ -19,11 +24,21 @@ interface SlimeState {
   colorB: THREE.Color
   mix: number
 
+  // Add-ins
+  addIns: ActiveAddIn[]
+  seed: number
+
   // Actions
   setPointerDown: (down: boolean) => void
   setCurrentTouch: (touch: TouchPoint | null) => void
   setSlimeType: (typeId: string) => void
   setColors: (colorA: string, colorB: string, mix: number) => void
+  setColorA: (hex: string) => void
+  setColorB: (hex: string) => void
+  setMix: (mix: number) => void
+  addAddIn: (addInId: string) => void
+  removeAddIn: (addInId: string) => void
+  setGlobalDensity: (density: number) => void
 }
 
 export const useSlimeStore = create<SlimeState>((set) => {
@@ -38,6 +53,9 @@ export const useSlimeStore = create<SlimeState>((set) => {
     colorA: new THREE.Color(initialType.defaultColorA),
     colorB: new THREE.Color(initialType.defaultColorB),
     mix: initialType.defaultMix,
+
+    addIns: [],
+    seed: Math.floor(Math.random() * 100000),
 
     setPointerDown: (down) => set({ isPointerDown: down }),
     setCurrentTouch: (touch) => set({ currentTouch: touch }),
@@ -59,6 +77,23 @@ export const useSlimeStore = create<SlimeState>((set) => {
         mix,
       })
     },
+
+    setColorA: (hex) => set({ colorA: new THREE.Color(hex) }),
+    setColorB: (hex) => set({ colorB: new THREE.Color(hex) }),
+    setMix: (mix) => set({ mix }),
+
+    addAddIn: (addInId) =>
+      set((state) => ({
+        addIns: [...state.addIns, { addInId, density: 0.5 }],
+      })),
+    removeAddIn: (addInId) =>
+      set((state) => ({
+        addIns: state.addIns.filter((a) => a.addInId !== addInId),
+      })),
+    setGlobalDensity: (density) =>
+      set((state) => ({
+        addIns: state.addIns.map((a) => ({ ...a, density })),
+      })),
   }
 })
 

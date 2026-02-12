@@ -2,6 +2,7 @@ import { useRef, useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import { TouchImprint, type TouchImprintHandle } from './TouchImprint'
 import { SlimeMesh } from './SlimeMesh'
+import { AddInsRenderer } from './AddInsRenderer'
 import { usePointerTracker } from './usePointerTracker'
 
 export function SlimeWorld() {
@@ -31,8 +32,11 @@ export function SlimeWorld() {
 
   return (
     <>
+      <ambientLight intensity={0.6} />
+      <directionalLight position={[2, 3, 5]} intensity={0.8} />
       <TouchImprint ref={imprintRef} />
       <SlimeMesh imprintRef={imprintRef} />
+      <AddInsRenderer />
     </>
   )
 }
