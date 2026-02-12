@@ -1,14 +1,6 @@
 import { Canvas } from '@react-three/fiber'
+import { SlimeWorld } from '../engine/SlimeWorld'
 import './App.css'
-
-function Placeholder() {
-  return (
-    <mesh>
-      <planeGeometry args={[2, 2]} />
-      <meshBasicMaterial color="#1a1a2e" />
-    </mesh>
-  )
-}
 
 export function App() {
   return (
@@ -22,9 +14,18 @@ export function App() {
         }}
         dpr={[1, 2]}
         frameloop="always"
-        camera={{ position: [0, 0, 1], near: 0.1, far: 10 }}
+        orthographic
+        camera={{
+          left: -1,
+          right: 1,
+          top: 1,
+          bottom: -1,
+          near: 0.1,
+          far: 10,
+          position: [0, 0, 1],
+        }}
       >
-        <Placeholder />
+        <SlimeWorld />
       </Canvas>
     </div>
   )
