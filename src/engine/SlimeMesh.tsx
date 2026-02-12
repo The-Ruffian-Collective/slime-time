@@ -1,7 +1,7 @@
 import { useRef, useMemo, useEffect } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
-import { useSlimeStore } from '../state/store'
+import { useSlimeStore, getCurrentSlimeParams } from '../state/store'
 import type { TouchImprintHandle } from './TouchImprint'
 
 import slimeSurfaceVert from './shaders/slimeSurface.vert.glsl?raw'
@@ -34,7 +34,8 @@ export function SlimeMesh({ imprintRef }: SlimeMeshProps) {
 
   // Update uniforms every frame (non-reactive store reads)
   useFrame((_state, _delta) => {
-    const { colorA, colorB, mix, slimeParams } = useSlimeStore.getState()
+    const { colorA, colorB, mix } = useSlimeStore.getState()
+    const slimeParams = getCurrentSlimeParams()
     const u = material.uniforms
 
     // Imprint texture from the TouchImprint pass

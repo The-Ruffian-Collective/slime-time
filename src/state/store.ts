@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import * as THREE from 'three'
+import { getSlimeType } from '../content/slimeTypes'
 
 export interface TouchPoint {
   uv: THREE.Vector2
@@ -12,36 +13,66 @@ interface SlimeState {
   isPointerDown: boolean
   currentTouch: TouchPoint | null
 
-  // Slime visuals (hardcoded defaults for M1, configurable in M3)
+  // Slime type and visuals (M2: now driven by slime type presets)
+  currentSlimeTypeId: string
   colorA: THREE.Color
   colorB: THREE.Color
   mix: number
-  slimeParams: {
-    gloss: number
-    translucency: number
-    noiseScale: number
-    depth: number
-  }
 
   // Actions
   setPointerDown: (down: boolean) => void
   setCurrentTouch: (touch: TouchPoint | null) => void
+  setSlimeType: (typeId: string) => void
+  setColors: (colorA: string, colorB: string, mix: number) => void
 }
 
-export const useSlimeStore = create<SlimeState>((set) => ({
-  isPointerDown: false,
-  currentTouch: null,
+export const useSlimeStore = create<SlimeState>((set) => {
+  // Initialize with milky slime type
+  const initialType = getSlimeType('milky')
 
-  colorA: new THREE.Color('#7cdb5e'),
-  colorB: new THREE.Color('#e84393'),
-  mix: 0.3,
-  slimeParams: {
-    gloss: 0.8,
-    translucency: 0.4,
-    noiseScale: 3.0,
-    depth: 0.15,
-  },
+  return {
+    isPointerDown: false,
+    currentTouch: null,
 
-  setPointerDown: (down) => set({ isPointerDown: down }),
-  setCurrentTouch: (touch) => set({ currentTouch: touch }),
-}))
+    currentSlimeTypeId: 'milky',
+    colorA: new THREE.Color(initialType.defaultColorA),
+    colorB: new THREE.Color(initialType.defaultColorB),
+    mix: initialType.defaultMix,
+
+    setPointerDown: (down) => set({ isPointerDown: down }),
+    setCurrentTouch: (touch) => set({ currentTouch: touch }),
+
+    setSlimeType: (typeId) => {
+      const slimeType = getSlimeType(typeId)
+      set({
+        currentSlimeTypeId: typeId,
+        colorA: new THREE.Color(slimeType.defaultColorA),
+        colorB: new THREE.Color(slimeType.defaultColorB),
+        mix: slimeType.defaultMix,
+      })
+    },
+
+    setColors: (colorA, colorB, mix) => {
+      set({
+        colorA: new THREE.Color(colorA),
+        colorB: new THREE.Color(colorB),
+        mix,
+      })
+    },
+  }
+})
+
+/**
+ * Helper to get current slime shader parameters from the store.
+ * Use this in useFrame to avoid reactive re-renders.
+ */
+export function getCurrentSlimeParams() {
+  const typeId = useSlimeStore.getState().currentSlimeTypeId
+  const slimeType = getSlimeType(typeId)
+  return {
+    gloss: slimeType.gloss,
+    translucency: slimeType.translucency,
+    noiseScale: slimeType.noiseScale,
+    depth: slimeType.depth,
+  }
+}
