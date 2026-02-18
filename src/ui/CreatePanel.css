@@ -1,26 +1,21 @@
-/* === Create Panel Drawer === */
+/* === Right-Side Drawer === */
 .create-panel {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  inset: 0;
   z-index: 100;
-  transform: translateY(100%);
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
 }
 
 .create-panel.open {
-  transform: translateY(0);
   pointer-events: auto;
 }
 
 .create-panel__backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.4);
   opacity: 0;
-  transition: opacity 0.35s ease;
+  transition: opacity 0.3s ease;
   pointer-events: none;
 }
 
@@ -30,26 +25,70 @@
 }
 
 .create-panel__sheet {
-  position: relative;
-  background: rgba(30, 30, 40, 0.95);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: 20px 20px 0 0;
-  max-height: 70vh;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: calc(var(--toolbar-height, 56px) + env(safe-area-inset-bottom, 0px));
+  width: min(45vw, 400px);
+  background: rgba(22, 22, 35, 0.97);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 12px 20px 32px;
+  transform: translateX(100%);
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
 }
 
-.create-panel__handle {
-  width: 40px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 2px;
-  margin: 0 auto 16px;
+.create-panel.open .create-panel__sheet {
+  transform: translateX(0);
 }
 
+/* Header */
+.create-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  position: sticky;
+  top: 0;
+  background: rgba(22, 22, 35, 0.97);
+  z-index: 1;
+}
+
+.create-panel__title {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.01em;
+}
+
+.create-panel__close {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+
+.create-panel__close:active {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* Sections */
 .create-panel__section {
+  padding: 20px 20px 0;
   margin-bottom: 20px;
 }
 
@@ -61,37 +100,6 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 10px;
-}
-
-/* === Toggle FAB === */
-.panel-toggle {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 99;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s, transform 0.2s;
-  touch-action: manipulation;
-}
-
-.panel-toggle:active {
-  transform: scale(0.92);
-  background: rgba(255, 255, 255, 0.25);
-}
-
-.panel-toggle.open {
-  background: rgba(255, 255, 255, 0.25);
 }
 
 /* === Slime Type Selector === */

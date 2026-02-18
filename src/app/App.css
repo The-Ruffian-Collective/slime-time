@@ -1,3 +1,7 @@
+:root {
+  --toolbar-height: 56px;
+}
+
 html,
 body,
 #root {
