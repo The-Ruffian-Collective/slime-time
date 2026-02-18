@@ -28,6 +28,11 @@ interface SlimeState {
   addIns: ActiveAddIn[]
   seed: number
 
+  // UI state
+  soundEnabled: boolean
+  activePanel: 'type' | 'colors' | 'addins' | null
+  shouldResetImprint: boolean
+
   // Actions
   setPointerDown: (down: boolean) => void
   setCurrentTouch: (touch: TouchPoint | null) => void
@@ -39,6 +44,10 @@ interface SlimeState {
   addAddIn: (addInId: string) => void
   removeAddIn: (addInId: string) => void
   setGlobalDensity: (density: number) => void
+  setSoundEnabled: (enabled: boolean) => void
+  setActivePanel: (panel: 'type' | 'colors' | 'addins' | null) => void
+  resetImprint: () => void
+  clearResetImprint: () => void
 }
 
 export const useSlimeStore = create<SlimeState>((set) => {
@@ -56,6 +65,10 @@ export const useSlimeStore = create<SlimeState>((set) => {
 
     addIns: [],
     seed: Math.floor(Math.random() * 100000),
+
+    soundEnabled: true,
+    activePanel: null,
+    shouldResetImprint: false,
 
     setPointerDown: (down) => set({ isPointerDown: down }),
     setCurrentTouch: (touch) => set({ currentTouch: touch }),
@@ -94,6 +107,11 @@ export const useSlimeStore = create<SlimeState>((set) => {
       set((state) => ({
         addIns: state.addIns.map((a) => ({ ...a, density })),
       })),
+
+    setSoundEnabled: (enabled) => set({ soundEnabled: enabled }),
+    setActivePanel: (panel) => set({ activePanel: panel }),
+    resetImprint: () => set({ shouldResetImprint: true }),
+    clearResetImprint: () => set({ shouldResetImprint: false }),
   }
 })
 

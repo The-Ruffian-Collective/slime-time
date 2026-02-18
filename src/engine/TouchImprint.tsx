@@ -83,7 +83,19 @@ export const TouchImprint = forwardRef<TouchImprintHandle>(
       const writeIdx = 1 - readIdx
 
       // Read touch state from store (non-reactive)
-      const { isPointerDown, currentTouch } = useSlimeStore.getState()
+      const { isPointerDown, currentTouch, shouldResetImprint, clearResetImprint } =
+        useSlimeStore.getState()
+
+      // Handle reset request
+      if (shouldResetImprint) {
+        gl.setRenderTarget(rts[0])
+        gl.clear(true, false, false)
+        gl.setRenderTarget(rts[1])
+        gl.clear(true, false, false)
+        gl.setRenderTarget(null)
+        clearResetImprint()
+        return
+      }
 
       const u = material.uniforms
       u.uPrevImprint.value = rts[readIdx].texture

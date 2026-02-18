@@ -1,6 +1,7 @@
 import { Canvas } from '@react-three/fiber'
 import { SlimeWorld } from '../engine/SlimeWorld'
 import { CreatePanel } from '../ui/CreatePanel'
+import { Toolbar } from '../ui/Toolbar'
 import './App.css'
 
 export function App() {
@@ -30,6 +31,7 @@ export function App() {
       </Canvas>
 
       <CreatePanel />
+      <Toolbar />
     </div>
   )
 }

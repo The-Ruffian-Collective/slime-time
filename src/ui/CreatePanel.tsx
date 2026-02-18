@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useSlimeStore } from '../state/store'
 import { SlimeTypeSelector } from './SlimeTypeSelector'
 import { ColorSwatchPicker } from './ColorSwatchPicker'
@@ -20,9 +19,15 @@ function colorToHex(c: { r: number; g: number; b: number }): string {
   return `#${r}${g}${b}`
 }
 
-export function CreatePanel() {
-  const [open, setOpen] = useState(false)
+const panelTitles = {
+  type: 'Slime Type',
+  colors: 'Colors',
+  addins: 'Add-ins',
+} as const
 
+export function CreatePanel() {
+  const activePanel = useSlimeStore((s) => s.activePanel)
+  const setActivePanel = useSlimeStore((s) => s.setActivePanel)
   const currentSlimeTypeId = useSlimeStore((s) => s.currentSlimeTypeId)
   const colorA = useSlimeStore((s) => s.colorA)
   const colorB = useSlimeStore((s) => s.colorB)
@@ -32,63 +37,71 @@ export function CreatePanel() {
   const setColorB = useSlimeStore((s) => s.setColorB)
   const setMix = useSlimeStore((s) => s.setMix)
 
+  const isOpen = activePanel !== null
   const hexA = colorToHex(colorA)
   const hexB = colorToHex(colorB)
 
+  const close = () => setActivePanel(null)
+
   return (
-    <>
-      {/* Toggle FAB */}
-      <button
-        className={`panel-toggle${open ? ' open' : ''}`}
-        onClick={() => setOpen(!open)}
-        aria-label={open ? 'Close panel' : 'Open panel'}
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="13.5" cy="6.5" r="2.5" />
-          <circle cx="6" cy="12" r="2.5" />
-          <circle cx="18" cy="12" r="2.5" />
-          <circle cx="8.5" cy="18.5" r="2.5" />
-          <circle cx="15.5" cy="18.5" r="2.5" />
-        </svg>
-      </button>
+    <div className={`create-panel${isOpen ? ' open' : ''}`} aria-hidden={!isOpen}>
+      <div className="create-panel__backdrop" onClick={close} />
 
-      {/* Drawer */}
-      <div className={`create-panel${open ? ' open' : ''}`}>
-        <div className="create-panel__backdrop" onClick={() => setOpen(false)} />
-        <div className="create-panel__sheet">
-          <div className="create-panel__handle" />
+      <div className="create-panel__sheet" role="dialog" aria-label="Customize slime">
+        {/* Header */}
+        <div className="create-panel__header">
+          <span className="create-panel__title">
+            {activePanel && panelTitles[activePanel]}
+          </span>
+          <button className="create-panel__close" onClick={close} aria-label="Close">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
 
-          {/* Slime Type */}
+        {/* Type section */}
+        {activePanel === 'type' && (
           <div className="create-panel__section">
-            <div className="create-panel__label">Slime Type</div>
             <SlimeTypeSelector activeId={currentSlimeTypeId} onSelect={setSlimeType} />
           </div>
+        )}
 
-          {/* Color A */}
-          <div className="create-panel__section">
-            <div className="create-panel__label">Color A</div>
-            <ColorSwatchPicker selected={hexA} onSelect={setColorA} />
-          </div>
+        {/* Colors section */}
+        {activePanel === 'colors' && (
+          <>
+            <div className="create-panel__section">
+              <div className="create-panel__label">Color A</div>
+              <ColorSwatchPicker selected={hexA} onSelect={setColorA} />
+            </div>
+            <div className="create-panel__section">
+              <div className="create-panel__label">Color B</div>
+              <ColorSwatchPicker selected={hexB} onSelect={setColorB} />
+            </div>
+            <div className="create-panel__section">
+              <div className="create-panel__label">Blend</div>
+              <BlendSlider value={mix} colorA={hexA} colorB={hexB} onChange={setMix} />
+            </div>
+          </>
+        )}
 
-          {/* Color B */}
+        {/* Add-ins section */}
+        {activePanel === 'addins' && (
           <div className="create-panel__section">
-            <div className="create-panel__label">Color B</div>
-            <ColorSwatchPicker selected={hexB} onSelect={setColorB} />
-          </div>
-
-          {/* Blend */}
-          <div className="create-panel__section">
-            <div className="create-panel__label">Blend</div>
-            <BlendSlider value={mix} colorA={hexA} colorB={hexB} onChange={setMix} />
-          </div>
-
-          {/* Add-ins */}
-          <div className="create-panel__section">
-            <div className="create-panel__label">Add-ins</div>
             <AddInsPanel />
           </div>
-        </div>
+        )}
       </div>
-    </>
+    </div>
   )
 }

@@ -198,6 +198,18 @@ class AudioEngine {
   }
 
   /**
+   * Enable or disable all sound. Convenience wrapper for the UI toggle.
+   */
+  setSoundEnabled(enabled: boolean) {
+    if (enabled) {
+      this.unmute()
+    } else {
+      this.mute()
+      this.stopDrag()
+    }
+  }
+
+  /**
    * Mute all audio.
    */
   mute() {
