@@ -1,10 +1,10 @@
 # Project Status: Slime Time
 
-Last updated: 2026-02-12
+Last updated: 2026-02-18
 
 ## Current state
 
-**Milestone 2 is complete!** All 5 slime type presets are implemented with distinct visual characteristics, and the audio system triggers sounds on press, drag, and release.
+**Milestones 1–3 are complete, plus a UX refactor.** The app has a working slime engine, 5 slime type presets, audio, a create panel with add-ins, and a new toolbar + side-drawer UI that makes all features visible and accessible.
 
 ### What exists
 
@@ -12,26 +12,38 @@ Last updated: 2026-02-12
 package.json          # All deps installed (React 19, Three.js, r3f 9, drei 10, Zustand 5)
 tsconfig.json         # Strict TypeScript
 vite.config.ts        # Vite + React SWC
-index.html            # iPad viewport meta, touch-action: none
+index.html            # iPad viewport meta, touch-action: none, viewport-fit: cover
 eslint.config.js      # ESLint flat config
 .prettierrc           # Prettier config
 src/
   vite-env.d.ts       # Vite types + *.glsl?raw module declaration
   main.tsx            # React entry point
   app/
-    App.tsx           # Fullscreen r3f Canvas, keyboard shortcuts (keys 1-5), debug overlay
-    App.css           # Reset styles, touch-action none, black bg
+    App.tsx           # Fullscreen r3f Canvas + CreatePanel + Toolbar
+    App.css           # Reset styles, --toolbar-height custom property
   state/
-    store.ts          # Zustand store — touch state, slime type, colors, actions
+    store.ts          # Zustand store — touch, slime config, UI state (activePanel, soundEnabled, resetImprint)
   content/
     slimeTypes.ts     # 5 slime type presets (Milky, Clear, Metallic, Jiggly, Crunchy)
+    addIns.ts         # 26 add-ins across 5 categories
   audio/
-    audioEngine.ts    # Web Audio API — unlock on gesture, squish/drag/pop sounds
+    audioEngine.ts    # Web Audio API — unlock on gesture, squish/drag/pop, mute/unmute
+  ui/
+    Toolbar.tsx       # Persistent bottom toolbar (Type, Colors, Add-ins, Sound, Reset, Save, Gallery)
+    Toolbar.css       # Toolbar styles with safe-area padding
+    CreatePanel.tsx   # Right-side sliding drawer, section-based content
+    CreatePanel.css   # Drawer styles + all sub-component styles
+    SlimeTypeSelector.tsx  # 5-card preset picker grid
+    ColorSwatchPicker.tsx  # 18-color palette grid
+    BlendSlider.tsx        # Gradient range input for color mix
+    AddInsPanel.tsx        # Category tabs + item grid + density slider
   engine/
     SlimeWorld.tsx    # Scene composition — pointer events, TouchImprint + SlimeMesh
-    TouchImprint.tsx  # Ping-pong RT imprint system (512x512, HalfFloat, priority -2)
+    TouchImprint.tsx  # Ping-pong RT imprint system (512x512, HalfFloat, priority -2, reset support)
     SlimeMesh.tsx     # 128x128 subdivided plane with slime surface shader (priority -1)
     usePointerTracker.ts  # Pointer -> UV mapper, audio triggers, single-touch
+    AddInsRenderer.tsx    # InstancedMesh renderer for add-ins
+    AddInInstances.tsx    # Per-item instance management
     shaders/
       imprintDecay.vert.glsl   # Fullscreen quad vertex shader
       imprintDecay.frag.glsl   # Decay + soft circular brush stamp (R channel)
@@ -41,36 +53,40 @@ src/
 
 ### What works
 
-- `npm run dev` starts clean
-- `npm run build` produces a production bundle
-- `npx tsc --noEmit` passes with no errors
-- **5 distinct slime types** switchable via keyboard (keys 1-5)
-  - Milky: soft, opaque (gloss 0.5, translucency 0.2)
-  - Clear: translucent, glass-like (gloss 0.9, translucency 0.8)
-  - Metallic: shiny, mirror-like (gloss 1.0, translucency 0.1)
-  - Jiggly: wobbly, extra displacement (depth 0.25)
-  - Crunchy: textured, grainy (noise scale 8.0)
-- **Audio system** unlocks on first touch
-  - Squish sound on press (volume tied to pressure)
-  - Drag sound on move (volume tied to velocity)
-  - Pop sound on release (rate-limited to 150ms cooldown)
-- Press/drag creates visible dents via GPU imprint texture
-- Dents fade out over time via decay factor (0.97)
-- No WebGL feedback loop warnings
+- `npm run dev` starts clean, `npm run build` produces production bundle
+- **Bottom toolbar** with 7 buttons always visible — Type, Colors, Add-ins, Sound, Reset, Save (placeholder), Gallery (placeholder)
+- **Right-side drawer** slides in from the right when a toolbar panel button is tapped; shows section-specific content
+- **Sound toggle** mutes/unmutes all audio via toolbar button
+- **Reset** clears the imprint texture, returning slime to smooth state
+- **5 distinct slime types** with unique shader parameters
+- **Audio system** — squish on press, drag sound on move, pop on release
+- **Add-ins** — 26 items across 5 categories rendered via InstancedMesh with seeded placement
+- **Color customization** — two color pickers + blend slider
+- Press/drag creates visible dents via GPU imprint texture, dents fade over time
 
-### What could be tuned / improved
+### What is not yet built
 
-The core rendering works but may benefit from visual polish:
-- Decay speed, brush radius, displacement depth (see tuning table below)
-- Lighting intensity and specular response
-- Noise animation speed and scale
+- Save/load flow (no persistence layer)
+- Gallery screen
+- Export/screenshot
+- PWA / offline support
+- Low stimulation mode (audio engine supports it, but no UI toggle)
+- Idle FPS throttling
 
 ## What to build next
 
-Milestone 2 is complete. Next is **Milestone 3** per `docs/plan.md`. M3 covers:
-- Create panel UI for slime type, colors, and mix amount
-- Add-ins menu and density controls
-- Add-ins rendering in scene (InstancedMesh with seeded placement)
+**Milestone 4: Gallery and persistence** per `docs/plan.md`:
+
+1. **Persistence layer** — create `src/storage/db.ts` using idb-keyval; implement save/load/delete for SlimeConfig + thumbnail blobs
+2. **SlimeConfig schema** — add `id`, `name`, `createdAt` fields to the store; define the canonical save format
+3. **Thumbnail generation** — render a small image from the canvas for gallery previews
+4. **Save flow** — wire the Save toolbar button to serialize current config + generate thumbnail + write to IndexedDB
+5. **Gallery screen** — grid of saved slimes with thumbnails; tap to load, long-press or edit mode to delete
+6. **Navigation** — add `currentScreen` to store; Gallery toolbar button navigates to gallery view
+
+After M4, remaining milestones are:
+- **M5**: Export and share (screenshot, Web Share API)
+- **M6**: PWA and performance hardening (service worker, offline, idle throttle)
 
 ### Tuning parameters
 
@@ -88,26 +104,38 @@ Milestone 2 is complete. Next is **Milestone 3** per `docs/plan.md`. M3 covers:
 - **useFrame priorities**: TouchImprint at -2, SlimeMesh at -1, r3f default render at 0.
 - **Non-reactive store reads**: `useSlimeStore.getState()` inside `useFrame`, never hook selectors.
 - **Imprint texture is the entire physics model**: No simulation — dents are texture values that decay.
+- **UI state in store**: `activePanel` controls which drawer section is shown; toolbar and drawer are siblings that communicate via Zustand.
 
-## Milestone 1 exit criteria
+## Milestone exit criteria
 
+### M1 (complete)
 1. [x] `npm run dev` starts clean, no console errors
-2. [x] Fullscreen colored slime surface renders (green/pink swirl from noise)
-3. [x] Press creates visible dent (displacement + darkening + specular shift)
+2. [x] Fullscreen colored slime surface renders
+3. [x] Press creates visible dent
 4. [x] Drag creates continuous trail of dents
 5. [x] Release causes dents to fade over ~1–2 seconds
 6. [x] No WebGL feedback loop warnings
 7. [x] `npm run build` succeeds
 
-## Milestone 2 exit criteria
-
-1. [x] Each slime type looks distinct (shader params configured per type)
+### M2 (complete)
+1. [x] Each slime type looks distinct
 2. [x] Audio works reliably after first user interaction
-3. [x] Squish sound on press (volume tied to pressure)
-4. [x] Drag sound on move (volume tied to velocity)
-5. [x] Pop sound on release (rate-limited)
-6. [x] Audio context unlocks on first pointer down
-7. [x] `npm run build` succeeds
+3. [x] Squish sound on press, drag sound on move, pop on release
+4. [x] Audio context unlocks on first pointer down
+5. [x] `npm run build` succeeds
+
+### M3 (complete)
+1. [x] Create panel with slime type, colors, blend, add-ins
+2. [x] Add-ins render in scene via InstancedMesh
+3. [x] Add-ins feel stable and do not tank FPS
+4. [x] `npm run build` succeeds
+
+### UX refactor (complete)
+1. [x] Bottom toolbar replaces FAB — all features have visible entry points
+2. [x] Right-side drawer replaces bottom sheet
+3. [x] Sound toggle works
+4. [x] Reset clears imprint texture
+5. [x] `npm run build` succeeds
 
 ## Reference docs
 
